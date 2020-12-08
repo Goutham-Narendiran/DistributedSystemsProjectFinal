@@ -32,6 +32,8 @@ public class QuizReadyActivity  extends AppCompatActivity {
         connType = intent.getStringExtra("CONN_TYPE");
 
         Button start = findViewById(R.id.btnStartQuiz);
+
+        //once everyone joins, they will be in this activity, where they can start the quiz whenever they are ready
         start.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

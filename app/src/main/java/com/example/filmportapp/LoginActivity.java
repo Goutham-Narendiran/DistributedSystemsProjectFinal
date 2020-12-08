@@ -36,10 +36,14 @@ public class LoginActivity extends AppCompatActivity {
             public void onClick(View v) {
                 EditText e1;
                 e1 = (EditText) findViewById(R.id.username);
+
+                //get the user input for name
                 String id = e1.getText().toString().trim();
 
+                //pass the name through an intent
                 Intent intent = new Intent(getBaseContext(), MainActivity.class);
 
+                //save name in constants
                 Constants.KEY_EMAIL = id;
                 intent.putExtra("username", id);
                 startActivity(intent);

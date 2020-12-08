@@ -50,12 +50,14 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        //if they want to start a new room
         btnNew.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //generate new room id
-               int count = Integer.parseInt(etCount.getText().toString());
-                 roomid = genRoom();
+               int count = Integer.parseInt(etCount.getText().toString()); //getting count of people joining
+                 roomid = genRoom(); //generate new room id
+                //start an intent and pass through informationw
                 Intent intent = new Intent(MainActivity.this, RoomActivity.class);
                 intent.putExtra("COUNT", count);
                 intent.putExtra("CONN_TYPE", "host");

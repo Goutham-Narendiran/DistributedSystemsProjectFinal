@@ -22,7 +22,7 @@ public class MoviesActivity extends AppCompatActivity {
     ImageButton card_artsy;
     ImageButton card_spooky;
     String category;
-    Button logout, submitButton, boards;
+    //movie links to be used with Youtube API
     public String hp = "jfdZd0yx05o";
     public String terminator = "1JPxRU4y19w";
     public String javamovie = "RnqAXuLZlaE";
@@ -32,29 +32,26 @@ public class MoviesActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_movies);
+        //init textviw and buttons
         final TextView seekBarValue = findViewById(R.id.distanceText);
         TextView welcomeMsg = findViewById(R.id.welcomeText);
         welcomeMsg.setText("CONGRATULATIONS " + Constants.KEY_EMAIL +"! You Won the Quiz!\nPick a movie to watch:");
         int userScore = Constants.KEY_MYSCORE;
         seekBarValue.setText("Your Score: " + userScore);
-       // String username = PreferenceUtils.getUsername(this);
-       // welcomeMsg.setText("Welcome to Film Port, " + username + ".\nYOU ARE THE QUIZ WINNER!\n Pick a Movie to watch");
-
-
-       // submitButton = findViewById(R.id.button_submit);
-      //  logout = findViewById(R.id.Logout_btn);
-      //  boards = findViewById(R.id.button_leaderboard);
         card_nature = findViewById(R.id.ib_terminator);
         card_urban = findViewById(R.id.ib_java);
         card_artsy = findViewById(R.id.ib_artsy);
         card_spooky = findViewById(R.id.ib_hp);
 
+
+        //wait for user input for movie selection
+        //call appropriate movie for the button they pick
         card_nature.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 Intent intent = new Intent(MoviesActivity.this, HostActivity.class);
                 intent.putExtra("MOVIE_ID", terminator);
                 startActivity(intent);
-                //category = "nature";
+
             }
         });
 
@@ -87,36 +84,3 @@ public class MoviesActivity extends AppCompatActivity {
 
 }
 
-        //button will available for trivia winner be used to pass movie id and obtain host status
-
-//        submitButton.setOnClickListener(new View.OnClickListener() {
-//            public void onClick(View v) {
-//                Intent intent = new Intent(getBaseContext(), AdventureMarkerMap.class);
-//                intent.putExtra("ID", distance);
-//                if (!(category.equals("null")))
-//                startActivity(intent); // dont change pages unless a category is selected
-//            }
-//        });
-
-        /*
-        logout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                PreferenceUtils.savePassword(null, cardViewMenu.this);
-                PreferenceUtils.saveUsername(null, cardViewMenu.this);
-                Intent intent = new Intent(cardViewMenu.this, LoginActivity.class);
-                startActivity(intent);
-            }
-        });
-
-        boards.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(cardViewMenu.this, LeaderboardActivity.class);
-                startActivity(intent);
-            }
-        });
-
-
-    }
-*/

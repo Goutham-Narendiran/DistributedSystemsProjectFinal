@@ -43,25 +43,25 @@ public class QuizDoneActivity  extends AppCompatActivity {
         client = new MqttAndroidClient(QuizDoneActivity.this, host1, clientId);
         MqttConnectOptions options = new MqttConnectOptions();
 
+        //connect to the broker
         try {
             IMqttToken token = client.connect(options);
+            //set callback to handle messages
             token.setActionCallback(new IMqttActionListener() {
                 @Override
                 public void onSuccess(IMqttToken asyncActionToken) {
                     // We are connected
                     Toast.makeText(QuizDoneActivity.this , "Connected", Toast.LENGTH_SHORT).show();
 
-
+                    //subcribe to receive msgs
                     subscription();
-                    String name = Constants.KEY_EMAIL;
 
-                    System.out.println("NAME " + name);
-                    System.out.println("score " + score);
-                    // String scorr = score.toString();
+                    //pass the name of the user and their score as a message to the server
+                    String name = Constants.KEY_EMAIL;
                     String msg = name+"&"+score;
-                    System.out.println(msg);
                     pubMSG(msg);
 
+                    //call back message handler
                     client.setCallback(new MqttCallback() {
                         @Override
                         public void connectionLost(Throwable cause) {
@@ -70,12 +70,16 @@ public class QuizDoneActivity  extends AppCompatActivity {
 
                         @Override
                         public void messageArrived(String topic, MqttMessage message) throws Exception {
-
+                    // filter through by topic
+                            //if the receive host message
                             if ((message.toString()).equalsIgnoreCase("host")){
+                                //they will be going to the movie selection page
                                 Intent intent = new Intent(QuizDoneActivity.this,MoviesActivity.class);
                                 startActivity(intent);
                             }
+                            //if they receive client
                             else if ((message.toString()).equalsIgnoreCase("client")){
+                                //they will go to the watching page and wait for the host
                                 Intent intent = new Intent(QuizDoneActivity.this,ClientActivity.class);
                                 startActivity(intent);
                             }
@@ -112,13 +116,13 @@ public class QuizDoneActivity  extends AppCompatActivity {
 
 
 
+    //publish message to server with room ID in the topic so that they do not collide with other rooms msgs
     private void pubMSG(String msg){
         String topic = "filmport/trivia/whowon/"+Constants.ROOM_ID;
         String payload = msg;
         byte[] encodedPayload = new byte[0];
         try {
-            //encodedPayload = payload.getBytes("UTF-8");
-            // MqttMessage message = new MqttMessage(encodedPayload);
+
             client.publish(topic, payload.getBytes(), 0, false);
             Toast.makeText(this , "MSG Sent", Toast.LENGTH_SHORT).show();
         } catch (MqttException e) {
@@ -126,6 +130,7 @@ public class QuizDoneActivity  extends AppCompatActivity {
         }
     }
 
+    //subscribe to receive msgs from server with their room id and name, so that every instance gets an unique msg
     private void subscription (){
         String topic = "filmport/trivia/" + Constants.ROOM_ID + "/" +Constants.KEY_EMAIL;
         int qos = 1;

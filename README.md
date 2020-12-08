@@ -13,3 +13,5 @@ To run the application:
 2) Build the project in Android Studio and run it on an emulator or a supported debugging device. We suggest using Android API 29+, however, you can use anything over API 25.
 
 3) Enjoy 
+
+Showcase: https://youtu.be/k55FzM2v7O0

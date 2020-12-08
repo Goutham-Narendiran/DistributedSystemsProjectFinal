@@ -32,14 +32,9 @@ public class ClientActivity extends YouTubeBaseActivity {
     TextView tvMSG;
     EditText etMSG;
     YouTubePlayer.OnInitializedListener mOnInitialListener;
-    String videoL = "87F2d89GatA";
-    String videoL2 = "1JPxRU4y19w";
-    String videoS = "Qgduhk26sIw";
     String videoS2 = "RnqAXuLZlaE";
-
     String allMSG = "";
     String inputMSG = "";
-
     MqttAndroidClient client;
     YouTubePlayer youTubePlayer;
 
@@ -49,26 +44,26 @@ public class ClientActivity extends YouTubeBaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_client);
 
+        //init buttons
         btnSync = (Button)findViewById(R.id.btnSync);
-
         btnSend = (Button)findViewById(R.id.btnSend);
         tvMSG = (TextView)findViewById(R.id.tvMSG);
+        //innit textview
         tvMSG.setMovementMethod(new ScrollingMovementMethod());
         tvMSG.setText(allMSG);
+        //innit edit text for users input
         etMSG = (EditText)findViewById(R.id.etMSG);
-
         etMSG.setHint("Enter message...");
-
+        //all msgs prior to movie starting handled here
         btnSend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                //send user msg and name to all clients and host in room
                 inputMSG = Constants.KEY_EMAIL+ ": " + etMSG.getText().toString();
                 pubMSG(inputMSG, (Constants.ROOM_ID+"convo"));
-                etMSG.getText().clear();
-                etMSG.onEditorAction(EditorInfo.IME_ACTION_DONE);
-                // allMSG += "\n"+inputMSG;
-                //tvMSG.append("\n"+inputMSG);
+                etMSG.getText().clear(); //clear input
+                etMSG.onEditorAction(EditorInfo.IME_ACTION_DONE); //dismiss keyboard
+
             }
         });
 
@@ -79,6 +74,7 @@ public class ClientActivity extends YouTubeBaseActivity {
         client = new MqttAndroidClient(ClientActivity.this, host1, clientId);
         MqttConnectOptions options = new MqttConnectOptions();
 
+        //establish connection and set call back to handle incoming msgs
         try {
             IMqttToken token = client.connect(options);
             token.setActionCallback(new IMqttActionListener() {
@@ -86,9 +82,7 @@ public class ClientActivity extends YouTubeBaseActivity {
                 public void onSuccess(IMqttToken asyncActionToken) {
                     // We are connected
                     Toast.makeText(ClientActivity.this , "Connected", Toast.LENGTH_SHORT).show();
-                    //  client.close();
-                    // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-
+                    //subscrtibe to topics
                     subscription();
 
 
@@ -107,6 +101,7 @@ public class ClientActivity extends YouTubeBaseActivity {
             e.printStackTrace();
         }
 
+        //handles incoming messages prior to movie starting
         client.setCallback(new MqttCallback() {
             @Override
             public void connectionLost(Throwable cause) {
@@ -115,16 +110,18 @@ public class ClientActivity extends YouTubeBaseActivity {
 
             @Override
             public void messageArrived(String topic, MqttMessage message) throws Exception {
-                //tvMSG.append("\n"+message.toString());
 
+            //msg to start the movie
                 if (topic.equalsIgnoreCase("video/sync/update/"+ Constants.ROOM_ID + "start")){
                     Toast.makeText(ClientActivity.this , "MSG RECEIVED: START", Toast.LENGTH_SHORT).show();
-                    mYoutubePlayerView.initialize("AIzaSyBMkd0FZt260WBoQGT2vCJk4qQFbixHzTE", mOnInitialListener);
+                    mYoutubePlayerView.initialize("AIzaSyBMkd0FZt260WBoQGT2vCJk4qQFbixHzTE", mOnInitialListener); //start video
                 }
+                //msg to receive chat from all clients and host
                 else if (topic.equalsIgnoreCase("video/sync/update/"+ Constants.ROOM_ID+"convo")){
                     Toast.makeText(ClientActivity.this , "MSG RECEIVED: NEW CHAT", Toast.LENGTH_SHORT).show();
                     tvMSG.append("\n"+message.toString());
                 }
+                //msg to receive movie selected by host
                 else if (topic.equalsIgnoreCase("video/sync/update/" + Constants.ROOM_ID+"movie")){
                     Toast.makeText(ClientActivity.this , "MSG RECEIVED: MOV RECVD", Toast.LENGTH_SHORT).show();
                     videoS2 = message.toString();
@@ -140,31 +137,33 @@ public class ClientActivity extends YouTubeBaseActivity {
             }
         });
 
-
+        //start the video playback
         mYoutubePlayerView = (YouTubePlayerView)findViewById(R.id.YTvid);
 
         mOnInitialListener = new YouTubePlayer.OnInitializedListener() {
             @Override
             public void onInitializationSuccess(YouTubePlayer.Provider provider, YouTubePlayer youTubePlayer, boolean b) {
-                youTubePlayer.loadVideo(videoS2, 4000);
+                youTubePlayer.loadVideo(videoS2);
 
+                //button to request sync update
                 btnSync.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        pubMSG("SYNC REQ",  Constants.ROOM_ID+ "syncreq");
-                        //CODE TO SYNC HERE
+                        pubMSG("SYNC REQ",  Constants.ROOM_ID+ "syncreq"); //publish in a topic for host to receive
+
                     }
                 });
+                //send chat after the movie started
                 btnSend.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
+                        //get client msg and name and publish to rooms convo topic for everyone in topic to receive
                         etMSG = (EditText)findViewById(R.id.etMSG);
                         inputMSG = Constants.KEY_EMAIL+ ": " + etMSG.getText().toString();
                         pubMSG(inputMSG, (Constants.ROOM_ID+"convo"));
-                        etMSG.getText().clear();
-                        etMSG.onEditorAction(EditorInfo.IME_ACTION_DONE);
-                        // allMSG += "\n"+inputMSG;
-                        //tvMSG.append("\n"+inputMSG);
+                        etMSG.getText().clear();//clear input
+                        etMSG.onEditorAction(EditorInfo.IME_ACTION_DONE);//dismiss keyboard
+
                     }
                 });
 
@@ -173,43 +172,47 @@ public class ClientActivity extends YouTubeBaseActivity {
                     public void connectionLost(Throwable cause) {
 
                     }
-
+                    //handles incoming msgs after movie starts
                     @Override
                     public void messageArrived(String topic, MqttMessage message) throws Exception {
+                        //messages filtered by topic
 
-
+                        //topic for movies in room to play
                         if (topic.equalsIgnoreCase("video/sync/update/" + Constants.ROOM_ID+ "play")){
                             Toast.makeText(ClientActivity.this , "MSG RECEIVED: PLAY", Toast.LENGTH_SHORT).show();
                             youTubePlayer.play();
                         }
+                        //topic to skip 10 seconds
                         else if (topic.equalsIgnoreCase("video/sync/update/" +  Constants.ROOM_ID+ "skip")){
                             Toast.makeText(ClientActivity.this , "MSG RECEIVED: SKIP", Toast.LENGTH_SHORT).show();
-                            //mYoutubePlayerView.initialize("AIzaSyBMkd0FZt260WBoQGT2vCJk4qQFbixHzTE", mOnInitialListener);
-                            youTubePlayer.seekToMillis(youTubePlayer.getCurrentTimeMillis()+ 10000);
+
+                            youTubePlayer.seekToMillis(youTubePlayer.getCurrentTimeMillis()+ 10000); //add 10 seconds to current time
                         }
+                        //topic to rewind
                         else if (topic.equalsIgnoreCase("video/sync/update/" +   Constants.ROOM_ID+ "rwnd")){
                             Toast.makeText(ClientActivity.this , "MSG RECEIVED: RWND", Toast.LENGTH_SHORT).show();
-                            //mYoutubePlayerView.initialize("AIzaSyBMkd0FZt260WBoQGT2vCJk4qQFbixHzTE", mOnInitialListener);
-                            youTubePlayer.seekToMillis(youTubePlayer.getCurrentTimeMillis()- 10000);
+
+                            youTubePlayer.seekToMillis(youTubePlayer.getCurrentTimeMillis()- 10000); //rewind 10 secs from current time
                         }
 
+                        //topic to pause movie
                         else if (topic.equalsIgnoreCase("video/sync/update/" + Constants.ROOM_ID+ "pause")){
                             Toast.makeText(ClientActivity.this , "MSG RECEIVED: PAUSE", Toast.LENGTH_SHORT).show();
-                            //mYoutubePlayerView.initialize("AIzaSyBMkd0FZt260WBoQGT2vCJk4qQFbixHzTE", mOnInitialListener);
+
                             youTubePlayer.pause();
                         }
+                        //sync now topic after clien pubs a sync request
                         else if (topic.equalsIgnoreCase("video/sync/update/" + Constants.ROOM_ID+ "syncnow")){
                             Toast.makeText(ClientActivity.this , "MSG RECEIVED: SYNCING", Toast.LENGTH_SHORT).show();
-                            //mYoutubePlayerView.initialize("AIzaSyBMkd0FZt260WBoQGT2vCJk4qQFbixHzTE", mOnInitialListener);
-
-
+                            //convert the sync now message from a byte to String then to integer
                             int timeSync = Integer.parseInt(String.valueOf(message));
-
-                            youTubePlayer.seekToMillis(timeSync+1000);
+                            //update current time with time for sync
+                            youTubePlayer.seekToMillis(timeSync+1000); //added 1 second to sync time to adress for delay in transit of messages between host and client
                         }
+                        //topic to handle incoming msgs
                         else if (topic.equalsIgnoreCase("video/sync/update/" + Constants.ROOM_ID+"convo")){
                             Toast.makeText(ClientActivity.this , "MSG RECEIVED: NEW CHAT", Toast.LENGTH_SHORT).show();
-                            tvMSG.append("\n"+message.toString());
+                            tvMSG.append("\n"+message.toString());//append textview to show new msg
                         }
 
 
@@ -234,13 +237,13 @@ public class ClientActivity extends YouTubeBaseActivity {
 
     }
 
+    //publish by topic with an update message
+    //used to communicate to host and other clients
     private void pubMSG(String msg, String topicid){
         String topic = "video/sync/update/"+topicid;
         String payload = msg;
         byte[] encodedPayload = new byte[0];
         try {
-            //encodedPayload = payload.getBytes("UTF-8");
-            // MqttMessage message = new MqttMessage(encodedPayload);
             client.publish(topic, payload.getBytes(), 0, false);
             Toast.makeText(this , "MSG Sent", Toast.LENGTH_SHORT).show();
         } catch (MqttException e) {
@@ -249,6 +252,7 @@ public class ClientActivity extends YouTubeBaseActivity {
     }
 
 
+    //subscribe to all topics in "video/sync/update/" to enable communcation between all clients and host for chat and video sync
     private void subscription (){
         String topic = "video/sync/update/#";
         int qos = 1;

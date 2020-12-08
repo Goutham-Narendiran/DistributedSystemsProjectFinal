@@ -7,9 +7,9 @@ Sajeeva Seralathan, 100586578
 
 To run the application:
 
-1) Run the server on an IDE that supports Maven. (IntelliJ Recommanded) 
-   The sever can be located under Film Port Server folder. 
+1) Run the server (FilmPortServer) on an IDE that supports Maven. (IntelliJ Recommanded) 
+   The sever code can be found here: FilmPortServer/src/main/java/Lobby.java
 
-2) Install the application using android studio on an android device emulator (Suggest API 29 or higher).
+2) Build the project in Android Studio and run it on an emulator or a supported debugging device. We suggest using Android API 29+, however, you can use anything over API 25.
 
 3) Enjoy 
